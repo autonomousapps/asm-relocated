@@ -1,0 +1,70 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'maven-publish'
+    //id 'signing'
+}
+
+repositories {
+    jcenter()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { pub ->
+	    pub.groupId = 'autonomousapps'
+            pub.artifactId = 'asm'
+            pub.version = '7.2'
+
+	    //from components.java
+	    project.shadow.component(pub)
+	}
+    }
+    repositories {
+        maven {
+	    url = "$buildDir/repo"
+	}
+    }
+}
+
+//signing {
+//    sign publishing.publications.mavenJava
+//}
+
+ext.ASM_VERSION = '7.2'
+
+dependencies {
+    implementation "org.ow2.asm:asm:$ASM_VERSION"
+    implementation "org.ow2.asm:asm-tree:$ASM_VERSION"
+
+    testImplementation 'junit:junit:4.12'
+}
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency {
+            if (requested.group == 'org.ow2.asm') {
+                useVersion ASM_VERSION
+            }
+        }
+    }
+}
+
+//jar.enabled = false
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+}
+
+shadowJar {
+    dependsOn tasks.relocateShadowJar
+    archiveClassifier.set('')
+    relocate 'org.objectweb.asm', 'com.autonomousapps.internal.asm'
+}
