@@ -6,3 +6,9 @@ build
 
 # Ignore emacs temp files
 **/*~
+
+# bintray creds
+bintray.properties
+
+# Ignore IDEA settings
+.idea/

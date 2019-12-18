@@ -16,29 +16,43 @@ java {
     withSourcesJar()
 }
 
+ext.ASM_VERSION = '7.2'
+
 publishing {
     publications {
         shadow(MavenPublication) { pub ->
-	    pub.groupId = 'autonomousapps'
+            pub.groupId = 'autonomousapps'
             pub.artifactId = 'asm'
-            pub.version = '7.2'
+            pub.version = ASM_VERSION
 
-	    //from components.java
-	    project.shadow.component(pub)
-	}
+            //from components.java
+            project.shadow.component(pub)
+        }
     }
     repositories {
+        Properties bintrayProperties = new Properties()
+        bintrayProperties.load(file('bintray.properties').newDataInputStream())
+        def un = bintrayProperties.getProperty('user')
+        def key = bintrayProperties.getProperty('key')
+        if (un && key) {
+            maven {
+                name = 'bintray'
+                url = "https://api.bintray.com/content/autonomousapps-org/libs/asm-relocated"
+                credentials(PasswordCredentials) {
+                    username = un
+                    password = key
+                }
+            }
+        }
         maven {
-	    url = "$buildDir/repo"
-	}
+            url = "$buildDir/repo"
+        }
     }
 }
 
 //signing {
-//    sign publishing.publications.mavenJava
+//    sign publishing.publications.shadow
 //}
-
-ext.ASM_VERSION = '7.2'
 
 dependencies {
     implementation "org.ow2.asm:asm:$ASM_VERSION"
