@@ -16,14 +16,12 @@ java {
     withSourcesJar()
 }
 
-ext.ASM_VERSION = '7.2'
-
 publishing {
     publications {
         shadow(MavenPublication) { pub ->
             pub.groupId = 'autonomousapps'
             pub.artifactId = 'asm'
-            pub.version = ASM_VERSION
+            pub.version = '7.2.0.1'
 
             //from components.java
             project.shadow.component(pub)
@@ -54,9 +52,11 @@ publishing {
 //    sign publishing.publications.shadow
 //}
 
+ext.VERSION_ASM = '7.2'
+
 dependencies {
-    implementation "org.ow2.asm:asm:$ASM_VERSION"
-    implementation "org.ow2.asm:asm-tree:$ASM_VERSION"
+    implementation "org.ow2.asm:asm:$VERSION_ASM"
+    implementation "org.ow2.asm:asm-tree:$VERSION_ASM"
 
     testImplementation 'junit:junit:4.12'
 }
@@ -65,7 +65,7 @@ configurations.all {
     resolutionStrategy {
         eachDependency {
             if (requested.group == 'org.ow2.asm') {
-                useVersion ASM_VERSION
+                useVersion VERSION_ASM
             }
         }
     }
