@@ -1,84 +1,82 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 plugins {
-    id 'java-library'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
-    id 'maven-publish'
-    //id 'signing'
+  id 'java-library'
+  id 'com.github.johnrengelman.shadow' version '5.2.0'
+  id 'maven-publish'
+  //id 'signing'
 }
 
 repositories {
-    jcenter()
+  mavenCentral()
 }
 
 java {
-    withJavadocJar()
-    withSourcesJar()
+  withJavadocJar()
+  withSourcesJar()
 }
 
-publishing {
-    publications {
-        shadow(MavenPublication) { pub ->
-            pub.groupId = 'autonomousapps'
-            pub.artifactId = 'asm'
-            pub.version = '7.2.0.1'
+ext.VERSION_ASM = '9.2'
 
-            //from components.java
-            project.shadow.component(pub)
-        }
+publishing {
+  publications {
+    shadow(MavenPublication) { pub ->
+      pub.groupId = 'autonomousapps'
+      pub.artifactId = 'asm'
+      pub.version = "$VERSION_ASM.0.1"
+
+      //from components.java
+      project.shadow.component(pub)
     }
-    repositories {
-        Properties bintrayProperties = new Properties()
-        bintrayProperties.load(file('bintray.properties').newDataInputStream())
-        def un = bintrayProperties.getProperty('user')
-        def key = bintrayProperties.getProperty('key')
-        if (un && key) {
-            maven {
-                name = 'bintray'
-                url = "https://api.bintray.com/content/autonomousapps-org/libs/asm-relocated"
-                credentials(PasswordCredentials) {
-                    username = un
-                    password = key
-                }
-            }
-        }
-        maven {
-            url = "$buildDir/repo"
-        }
+  }
+  repositories {
+    maven {
+      url = "$buildDir/repo"
     }
+//    Properties bintrayProperties = new Properties()
+//    bintrayProperties.load(file('bintray.properties').newDataInputStream())
+//    def un = bintrayProperties.getProperty('user')
+//    def key = bintrayProperties.getProperty('key')
+//    if (un && key) {
+//      maven {
+//        name = 'bintray'
+//        url = "https://api.bintray.com/content/autonomousapps-org/libs/asm-relocated"
+//        credentials(PasswordCredentials) {
+//          username = un
+//          password = key
+//        }
+//      }
+//    }
+  }
 }
 
 //signing {
 //    sign publishing.publications.shadow
 //}
 
-ext.VERSION_ASM = '7.2'
-
 dependencies {
-    implementation "org.ow2.asm:asm:$VERSION_ASM"
-    implementation "org.ow2.asm:asm-tree:$VERSION_ASM"
-
-    testImplementation 'junit:junit:4.12'
+  implementation "org.ow2.asm:asm:$VERSION_ASM"
+  implementation "org.ow2.asm:asm-tree:$VERSION_ASM"
 }
 
 configurations.all {
-    resolutionStrategy {
-        eachDependency {
-            if (requested.group == 'org.ow2.asm') {
-                useVersion VERSION_ASM
-            }
-        }
+  resolutionStrategy {
+    eachDependency {
+      if (requested.group == 'org.ow2.asm') {
+        useVersion VERSION_ASM
+      }
     }
+  }
 }
 
 //jar.enabled = false
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
+  target = tasks.shadowJar
 }
 
 shadowJar {
-    dependsOn tasks.relocateShadowJar
-    archiveClassifier.set('')
-    relocate 'org.objectweb.asm', 'com.autonomousapps.internal.asm'
+  dependsOn tasks.relocateShadowJar
+  archiveClassifier.set('')
+  relocate 'org.objectweb.asm', 'com.autonomousapps.internal.asm'
 }
